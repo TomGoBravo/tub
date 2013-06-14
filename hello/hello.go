@@ -89,9 +89,7 @@ func measure(w http.ResponseWriter, r *http.Request) {
             formatted := make([]struct{Date template.JS; PostedSample template.JS}, len(measures))
             for i, m := range measures {
                 formatted[i].Date = template.JS(
-                    m.Date.Format("new Date(2006,") +
-                    strconv.Itoa(int(m.Date.Month()) - 1) +
-                    m.Date.Format(",2,15,4,5)"))
+                    "new Date(" + strconv.FormatInt(m.Date.Unix() * 1000, 10) + ")")
                 formatted[i].PostedSample = template.JS(strconv.Itoa(m.PostedSample))
             }
             if err := chartTemplate.Execute(w, formatted); err != nil {
@@ -164,7 +162,7 @@ const guestbookTemplateHTML = `
       {{.Content}}<br>
     {{end}}
     {{end}}
-    {{.Temp}} estimated at {{.TempDate.Format "2006-01-02 15:04"}} but this is only correct when on.
+    {{printf "%0.1f" .Temp}}°F estimated at {{.TempDate.Format "2006-01-02 15:04"}} but this is only correct when on.
   </body>
 </html>
 `
@@ -189,13 +187,13 @@ const chartTemplateHTML = `
         ]);
 
         var chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
-        chart.draw(data, {displayAnnotations: true});
+        chart.draw(data, {displayAnnotations: true, scaleType: "maximized"});
       }
     </script>
   </head>
 
   <body>
-    // Note how you must specify the size of the container element explicitly!
+    This is a graph of voltage measured on the thermoresistor <i>and</i> disabling R. In other words, it needs more processing to make it more useful.
     <div id='chart_div' style='width: 700px; height: 240px;'></div>
     <a href="/tub/measure?output=csv">csv</a>
   </body>
