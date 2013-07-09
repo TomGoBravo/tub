@@ -86,11 +86,12 @@ func measure(w http.ResponseWriter, r *http.Request) {
             }
             csvwriter.Flush()
         default:
-            formatted := make([]struct{Date template.JS; PostedSample template.JS}, len(measures))
+            formatted := make([]struct{Date template.JS; Temp template.JS}, len(measures))
             for i, m := range measures {
                 formatted[i].Date = template.JS(
                     "new Date(" + strconv.FormatInt(m.Date.Unix() * 1000, 10) + ")")
-                formatted[i].PostedSample = template.JS(strconv.Itoa(m.PostedSample))
+                formatted[i].Temp = template.JS(strconv.FormatFloat(
+                    sampleToTemp(m.PostedSample), 'f', 1, 64))  // bitSize. WTF Go?
             }
             if err := chartTemplate.Execute(w, formatted); err != nil {
                 http.Error(w, err.Error(), http.StatusInternalServerError)
@@ -101,7 +102,7 @@ func measure(w http.ResponseWriter, r *http.Request) {
 
 // Convert an A2D sample into a temperature in F
 func sampleToTemp(sample int) float64 {
-    v := float64(sample) / 65536 * 3.3
+    v := float64(sample >> 4) / 4095 * 3.3
     return (v - 5.00690909090911) / (-0.029227272727273)
 }
 
@@ -183,7 +184,7 @@ const chartTemplateHTML = `
         data.addColumn('string', 'text1');
         data.addRows([
         {{range .}}
-          [{{.Date}}, {{.PostedSample}}, undefined, undefined], {{end}}
+          [{{.Date}}, {{.Temp}}, undefined, undefined], {{end}}
         ]);
 
         var chart = new google.visualization.AnnotatedTimeLine(document.getElementById('chart_div'));
@@ -193,7 +194,7 @@ const chartTemplateHTML = `
   </head>
 
   <body>
-    This is a graph of voltage measured on the thermoresistor <i>and</i> disabling R. In other words, it needs more processing to make it more useful.
+    This is a graph of temperature measured over the thermoresistor <i>and</i> disabling R. In other words, when the Imp has disabled the tub the actual temperature is lower by about 5°F.
     <div id='chart_div' style='width: 700px; height: 240px;'></div>
     <a href="/tub/measure?output=csv">csv</a>
   </body>
