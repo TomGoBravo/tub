@@ -17,7 +17,7 @@ Some Python scripts which take i2c traffic captured by a Salae logic analyzer
 and attempt to show what is happening at a higher level.
 
 Example usage:
-sudo apt-get install python-pip python-pysqlite2
-sudo easy_install colorama
-python chomp.py --group_packets --print_packets --stateful_filter --hide_known samples/power-on-do-nothing.csv
+    sudo apt-get install python-pip python-pysqlite2
+    sudo easy_install colorama
+    python chomp.py --group_packets --print_packets --stateful_filter --hide_known samples/power-on-do-nothing.csv
 

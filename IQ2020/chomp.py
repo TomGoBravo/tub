@@ -1,5 +1,15 @@
 #!/usr/bin/python
 
+# Attempt at decoding higher level meaning from the IQ2020 I2C bus
+# Address 0x20: Front control panel
+# 0x21: Unknown, but present in my tub (rear control panel?)
+# 0x22: Lights
+# 0x18: Unknown and not present in my tub
+# 0x3E: Unknown and not present in my tub
+# 0x36: Unknown and not present in my tub
+# 0x44: Unknown and not present in my tub
+
+
 import csv
 import re
 import os.path
